@@ -1,7 +1,7 @@
 import backoff
 import openai
-from .pricing import OPENAI_MODELS
-from .result import QueryResult
+from ..pricing import LOCAL_MODELS
+from ..result import QueryResult
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,8 @@ def backoff_handler(details):
     exc = details.get("exception")
     if exc:
         logger.warning(
-            f"OpenAI - Retry {details['tries']} due to error: {exc}. Waiting {details['wait']:0.1f}s..."
+            f"Local Qwen - Retry {details['tries']} due to error: {exc}. "
+            f"Waiting {details['wait']:0.1f}s..."
         )
 
 
@@ -27,7 +28,7 @@ def backoff_handler(details):
     max_value=20,
     on_backoff=backoff_handler,
 )
-def query_local_qwen3-14b_vllm(
+def query_local_qwen3_14b_vllm(
     client,
     model,
     msg,
@@ -66,12 +67,14 @@ def query_local_qwen3-14b_vllm(
         )
         content = response.output_parsed
         new_content = ""
-        for i in content:
-            new_content += i[0] + ":" + i[1] + "\n"
+        for key, value in content:
+            new_content += f"{key}:{value}\n"
         new_msg_history.append({"role": "assistant", "content": new_content})
 
-    input_cost = OPENAI_MODELS[model]["input_price"] * response.usage.input_tokens
-    output_cost = OPENAI_MODELS[model]["output_price"] * response.usage.output_tokens
+    prices = LOCAL_MODELS.get(model, {"input_price": 0.0, "output_price": 0.0})
+    input_cost = prices["input_price"] * response.usage.input_tokens
+    output_cost = prices["output_price"] * response.usage.output_tokens
+
     result = QueryResult(
         content=content,
         msg=msg,
@@ -88,3 +91,5 @@ def query_local_qwen3-14b_vllm(
         model_posteriors=model_posteriors,
     )
     return result
+
+

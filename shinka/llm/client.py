@@ -80,14 +80,17 @@ def get_client_llm(model_name: str, structured_output: bool = False) -> Tuple[An
                 mode=instructor.Mode.GEMINI_JSON,
             )
     elif any(model_name.startswith(k) for k in LOCAL_MODELS.keys()):
-        # Split "Qwen/Qwen3-14B-AWQ#http://localhost:8001"
+        # Expected pattern: "<local-key>#<base_url>", e.g.
+        # "Qwen/Qwen3-14B-AWQ#http://localhost:8001/v1"
         base_name, sep, url = model_name.partition("#")
         if not sep or not url:
             raise ValueError(f"Invalid URL in model name: {model_name}")
 
-        # Use base_name for everything else
+        # Normalize model_name to the LOCAL_MODELS key so downstream
+        # checks (e.g. in shinka.llm.query) see the clean name.
         model_name = base_name
 
+        # Create OpenAI-compatible client pointing to local vLLM server
         client = openai.OpenAI(
             api_key="filler",
             base_url=url,
@@ -98,13 +101,6 @@ def get_client_llm(model_name: str, structured_output: bool = False) -> Tuple[An
                 client,
                 mode=instructor.Mode.JSON,
             )
-
-            # Structured output mode (if required)
-            if structured_output:
-                client = instructor.from_openai(
-                    client,
-                    mode=instructor.Mode.JSON,
-                )
     else:
         raise ValueError(f"Model {model_name} not supported.")
 
