@@ -205,3 +205,10 @@ REASONING_BEDROCK_MODELS = [
     "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     "bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0",
 ]
+
+LOCAL_MODELS = {
+    "Qwen/Qwen3-14B-AWQ": {
+        "input_price": 0 / M,
+        "output_price": 0 / M,
+    },
+}
