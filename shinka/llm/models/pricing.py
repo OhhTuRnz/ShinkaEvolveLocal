@@ -118,6 +118,14 @@ OPENAI_MODELS = {
         "input_price": 0.05 / M,
         "output_price": 0.4 / M,
     },
+    "gpt-5.1": {
+        "input_price": 1.25 / M,
+        "output_price": 10.0 / M,
+    },
+    "gpt-5.1-codex": {
+        "input_price": 1.25 / M,
+        "output_price": 10.0 / M,
+    },
 }
 
 
